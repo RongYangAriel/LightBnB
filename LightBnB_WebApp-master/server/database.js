@@ -135,13 +135,14 @@ const getAllProperties = function(options, limit = 10) {
 
   if (options && options.minimum_rating) {
     queryParams.push(`${options.minimum_rating}`);
-    queryString += `GROUP BY properties.id
+    queryString += `
     HAVING AVG(property_reviews.rating) > $${queryParams.length} 
     ` ;
   }
   // Step 4: add query after filter
   queryParams.push(limit);
   queryString += `
+  GROUP BY properties.id
   ORDER BY cost_per_night
   LIMIT $${queryParams.length};
   `;
@@ -161,10 +162,40 @@ exports.getAllProperties = getAllProperties;
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  // Step 1; set up params
+  const queryParams = [
+    property.owner_id,
+    property.title,
+    property.description,
+    property.thumbnail_photo_url,
+    property.cover_photo_url,
+    property.cost_per_night,
+    property.street,
+    property.city,
+    property.province,
+    property.post_code,
+    property.country,
+    property.parking_spaces,
+    property.number_of_bathrooms,
+    property.number_of_bedrooms
+  ];
+
+  // Step2: set up queryString
+  let queryString = `
+  INSERT INTO properties 
+  (owner_id, title, description, thumbnail_photo_url, cover_photo_url, cost_per_night, street, city, province, post_code, country, parking_spaces, number_of_bathrooms, number_of_bedrooms)
+  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
+  RETURNING * `;
+
+  // Step 3: add params or string
+
+  // Step 4: add extra query string
+
+  // Step 5: return
+  console.log(queryString, queryParams);
+  return pool.query(queryString, queryParams)
+  .then(res => res.rows);
+
 }
 exports.addProperty = addProperty;
 
