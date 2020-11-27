@@ -109,7 +109,7 @@ const getAllProperties = function(options, limit = 10) {
   let queryString = `
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
-  JOIN property_reviews ON properties.id = property_id
+  LEFT JOIN property_reviews ON properties.id = property_id
   `;
 
   // Step 3: Add Params and query if there is filter pass by
@@ -187,17 +187,12 @@ const addProperty = function(property) {
   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) 
   RETURNING * `;
 
-  // Step 3: add params or string
-
-  // Step 4: add extra query string
-
   // Step 5: return
   console.log(queryString, queryParams);
   return pool.query(queryString, queryParams)
-  .then(res => res.rows);
+  .then(res => res.rows[0]);
 
 }
 exports.addProperty = addProperty;
-
 
 getAllProperties();
